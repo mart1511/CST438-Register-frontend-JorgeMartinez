@@ -7,6 +7,11 @@ import Button from '@mui/material/Button';
 import Radio from '@mui/material/Radio';
 import {DataGrid} from '@mui/x-data-grid';
 import {SEMESTER_LIST} from '../constants.js'
+import AddStudent from './AddStudent';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Cookies from 'js-cookie';
+import {SERVER_URL} from '../constants.js'
 
 // user selects from a list of  (year, semester) values
 class Semester extends Component {
@@ -18,6 +23,39 @@ class Semester extends Component {
    onRadioClick = (event) => {
     console.log("Semester.onRadioClick "+JSON.stringify(event.target.value));
     this.setState({selected: event.target.value});
+  }
+
+  addStudent = (student) => {
+    const token = Cookies.get('XSRF-TOKEN');
+
+    fetch('${SERVER_URL}/student', 
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': token },
+      body: JSON.stringify(student)
+    })
+    .then(res => {
+      if(res.ok) {
+
+        toast.success("Student has been added", {
+          position: toast.POSITION.BOTTOM_CENTER
+        });
+      }
+      else{
+
+        toast.error("Error: Couldn't add student", {
+          position: toast.BOTTOM_CENTER
+        });
+        console.error('Post HTTP status =' + res.status);
+      }
+    })
+    .catch(err=> {
+
+      toast.error("Error: Cannot add", {
+        position: toast.POSITION.BOTTOM_CENTER
+    });
+      console.error(err);
+    })
   }
   
   render() {    
@@ -62,6 +100,9 @@ class Semester extends Component {
                 variant="outlined" color="primary" style={{margin: 10}}>
                 Get Schedule
               </Button>
+
+              <AddStudent addStudent={this.student} />
+              <ToastContainer autoClose={1500} />
           </div>
       </div>
     )
